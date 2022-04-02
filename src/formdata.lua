@@ -3,8 +3,6 @@
 
 local httpservice = game:GetService("HttpService")
 
-local MIME = require(script.Parent.mimetypes)
-local b64 = require(script.Parent.b64)
 
 --
 
@@ -33,7 +31,7 @@ function File.new(...)
 
 	self.name = "unknown"
 	self.content = ""
-	self.content_type = nil
+	self.content_type = "text/plain"
 
 	local args = {...}
 	if #args == 1 then
@@ -45,15 +43,6 @@ function File.new(...)
 
 		self.name = args[1]
 		self.content = args[2]
-		self.content_type = args[3]
-	end
-
-	-- no content-type provided: guess
-	if not self.content_type then
-		local ext = self.name:split(".")
-		ext = ext[#ext]
-
-		self.content_type = MIME[ext:lower()] or "text/plain"
 	end
 
 	if type(self.content) ~= "string" then
@@ -148,11 +137,6 @@ function FormData:build()
 				content = content .. ('; filename="%s"'):format(field.Value.name)
 				content = content .. "\r\nContent-Type: " .. field.Value.content_type
 
-				-- encode non-text files
-				if field.Value.content_type:sub(1, 5) ~= "text/" then
-					val = b64.encode(val)
-					content = content .. "\r\nContent-Transfer-Encoding: base64"
-				end
 			end
 
 			content = content .. "\r\n\r\n" .. val .. "\r\n"
